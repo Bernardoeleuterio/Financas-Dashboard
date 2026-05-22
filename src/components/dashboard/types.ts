@@ -28,6 +28,14 @@ export type Transaction = {
   type: "income" | "expense";
 };
 
+export type NewTransactionInput = {
+  title: string;
+  category: string;
+  date: string;
+  amount: number;
+  type: "income" | "expense";
+};
+
 export type Budget = {
   name: string;
   spent: number;

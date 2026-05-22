@@ -1,6 +1,10 @@
 import { Bell, CalendarDays, Plus } from "lucide-react";
 
-export function DashboardHeader() {
+type DashboardHeaderProps = {
+  onNewTransaction: () => void;
+};
+
+export function DashboardHeader({ onNewTransaction }: DashboardHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
       <div>
@@ -31,6 +35,7 @@ export function DashboardHeader() {
         </button>
         <button
           className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+          onClick={onNewTransaction}
           type="button"
         >
           <Plus className="size-4" />

@@ -6,8 +6,13 @@ import { BudgetsPanel } from "@/components/dashboard/BudgetsPanel";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthlyChart } from "@/components/dashboard/MonthlyChart";
+import { NewTransactionModal } from "@/components/dashboard/NewTransactionModal";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
+import type {
+  NewTransactionInput,
+  Transaction,
+} from "@/components/dashboard/types";
 
 const summaryCards = [
   {
@@ -57,7 +62,7 @@ const categoryData = [
   { name: "Outros", value: 334, color: "#7c3aed" },
 ];
 
-const transactions = [
+const initialTransactions: Transaction[] = [
   {
     title: "Salario",
     category: "Receita",
@@ -94,8 +99,24 @@ const budgets = [
   { name: "Lazer", spent: 330, limit: 500, color: "bg-rose-500" },
 ];
 
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
+function formatTransactionDate(date: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  })
+    .format(new Date(`${date}T00:00:00`))
+    .replace(".", "");
+}
+
 export function DashboardView() {
   const [chartsReady, setChartsReady] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactions, setTransactions] = useState(initialTransactions);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setChartsReady(true));
@@ -103,10 +124,25 @@ export function DashboardView() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  function handleCreateTransaction(transaction: NewTransactionInput) {
+    const signal = transaction.type === "income" ? "+" : "-";
+
+    setTransactions((currentTransactions) => [
+      {
+        title: transaction.title,
+        category: transaction.category,
+        date: formatTransactionDate(transaction.date),
+        amount: `${signal} ${currencyFormatter.format(transaction.amount)}`,
+        type: transaction.type,
+      },
+      ...currentTransactions,
+    ]);
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <DashboardHeader />
+        <DashboardHeader onNewTransaction={() => setIsModalOpen(true)} />
         <SummaryCards cards={summaryCards} />
 
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
@@ -119,6 +155,13 @@ export function DashboardView() {
           <BudgetsPanel budgets={budgets} />
         </div>
       </section>
+
+      {isModalOpen ? (
+        <NewTransactionModal
+          onClose={() => setIsModalOpen(false)}
+          onCreate={handleCreateTransaction}
+        />
+      ) : null}
     </main>
   );
 }

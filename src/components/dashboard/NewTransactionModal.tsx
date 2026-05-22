@@ -30,6 +30,7 @@ export function NewTransactionModal({
       category: selectedCategory,
       date: String(formData.get("date")),
       amount: Number(formData.get("amount")),
+      paymentMethod: String(formData.get("paymentMethod")),
       type: String(formData.get("type")) as NewTransactionInput["type"],
     });
 
@@ -126,6 +127,22 @@ export function NewTransactionModal({
               </select>
             </label>
 
+            <label className={styles.field}>
+              <span className={styles.label}>Forma de pagamento</span>
+              <select
+                className={styles.select}
+                defaultValue="Pix"
+                name="paymentMethod"
+              >
+                <option>Pix</option>
+                <option>Cartao</option>
+                <option>Dinheiro</option>
+                <option>Boleto</option>
+              </select>
+            </label>
+          </div>
+
+          <div className={styles.grid}>
             <label className={styles.field}>
               <span className={styles.label}>Data</span>
               <input

@@ -75,6 +75,7 @@ const initialTransactions: Transaction[] = [
     category: "Receita",
     date: "20 mai",
     amount: "+ R$ 5.800,00",
+    paymentMethod: "Pix",
     type: "income" as const,
   },
   {
@@ -82,6 +83,7 @@ const initialTransactions: Transaction[] = [
     category: "Alimentacao",
     date: "19 mai",
     amount: "- R$ 286,40",
+    paymentMethod: "Cartao",
     type: "expense" as const,
   },
   {
@@ -89,6 +91,7 @@ const initialTransactions: Transaction[] = [
     category: "Moradia",
     date: "18 mai",
     amount: "- R$ 119,90",
+    paymentMethod: "Boleto",
     type: "expense" as const,
   },
   {
@@ -96,6 +99,7 @@ const initialTransactions: Transaction[] = [
     category: "Receita",
     date: "16 mai",
     amount: "+ R$ 950,00",
+    paymentMethod: "Pix",
     type: "income" as const,
   },
 ];
@@ -141,6 +145,7 @@ export function DashboardView() {
         category: transaction.category,
         date: formatTransactionDate(transaction.date),
         amount: `${signal} ${currencyFormatter.format(transaction.amount)}`,
+        paymentMethod: transaction.paymentMethod,
         type: transaction.type,
       },
       ...currentTransactions,

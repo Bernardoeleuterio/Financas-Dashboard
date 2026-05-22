@@ -25,6 +25,7 @@ export type Transaction = {
   category: string;
   date: string;
   amount: string;
+  paymentMethod: string;
   type: "income" | "expense";
 };
 
@@ -33,6 +34,7 @@ export type NewTransactionInput = {
   category: string;
   date: string;
   amount: number;
+  paymentMethod: string;
   type: "income" | "expense";
 };
 

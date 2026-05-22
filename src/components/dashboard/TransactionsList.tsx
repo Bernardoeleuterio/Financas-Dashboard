@@ -52,7 +52,8 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                   {transaction.title}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  {transaction.category} | {transaction.date}
+                  {transaction.category} | {transaction.paymentMethod} |{" "}
+                  {transaction.date}
                 </p>
               </div>
             </div>

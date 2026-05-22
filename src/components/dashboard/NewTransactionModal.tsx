@@ -1,17 +1,25 @@
+import { useState } from "react";
 import { X } from "lucide-react";
 import type { FormEvent } from "react";
 import styles from "@/styles/NewTransactionModal.module.css";
 import type { NewTransactionInput } from "./types";
 
 type NewTransactionModalProps = {
+  categories: string[];
   onClose: () => void;
   onCreate: (transaction: NewTransactionInput) => void;
+  onCreateCategory: (category: string) => void;
 };
 
 export function NewTransactionModal({
+  categories,
   onClose,
   onCreate,
+  onCreateCategory,
 }: NewTransactionModalProps) {
+  const [selectedCategory, setSelectedCategory] = useState(categories[0] ?? "");
+  const [newCategory, setNewCategory] = useState("");
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -19,13 +27,25 @@ export function NewTransactionModal({
 
     onCreate({
       title: String(formData.get("title")),
-      category: String(formData.get("category")),
+      category: selectedCategory,
       date: String(formData.get("date")),
       amount: Number(formData.get("amount")),
       type: String(formData.get("type")) as NewTransactionInput["type"],
     });
 
     onClose();
+  }
+
+  function handleCreateCategory() {
+    const formattedCategory = newCategory.trim();
+
+    if (!formattedCategory) {
+      return;
+    }
+
+    onCreateCategory(formattedCategory);
+    setSelectedCategory(formattedCategory);
+    setNewCategory("");
   }
 
   return (
@@ -96,15 +116,13 @@ export function NewTransactionModal({
               <span className={styles.label}>Categoria</span>
               <select
                 className={styles.select}
-                defaultValue="Alimentacao"
                 name="category"
+                onChange={(event) => setSelectedCategory(event.target.value)}
+                value={selectedCategory}
               >
-                <option>Alimentacao</option>
-                <option>Moradia</option>
-                <option>Transporte</option>
-                <option>Lazer</option>
-                <option>Receita</option>
-                <option>Outros</option>
+                {categories.map((category) => (
+                  <option key={category}>{category}</option>
+                ))}
               </select>
             </label>
 
@@ -118,6 +136,27 @@ export function NewTransactionModal({
                 type="date"
               />
             </label>
+          </div>
+
+          <div className={styles.categoryCreator}>
+            <label className={styles.field}>
+              <span className={styles.label}>Criar categoria</span>
+              <input
+                className={styles.input}
+                maxLength={40}
+                onChange={(event) => setNewCategory(event.target.value)}
+                placeholder="Ex: Impostos"
+                type="text"
+                value={newCategory}
+              />
+            </label>
+            <button
+              className={styles.addCategoryButton}
+              onClick={handleCreateCategory}
+              type="button"
+            >
+              Adicionar categoria
+            </button>
           </div>
 
           <div className={styles.actions}>

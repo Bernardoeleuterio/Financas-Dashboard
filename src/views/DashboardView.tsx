@@ -59,7 +59,14 @@ const categoryData = [
   { name: "Alimentacao", value: 860, color: "#16a34a" },
   { name: "Transporte", value: 420, color: "#f59e0b" },
   { name: "Lazer", value: 330, color: "#e11d48" },
-  { name: "Outros", value: 334, color: "#7c3aed" },
+];
+
+const initialCategories = [
+  "Alimentacao",
+  "Moradia",
+  "Transporte",
+  "Lazer",
+  "Receita",
 ];
 
 const initialTransactions: Transaction[] = [
@@ -115,6 +122,7 @@ function formatTransactionDate(date: string) {
 
 export function DashboardView() {
   const [chartsReady, setChartsReady] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState(initialTransactions);
 
@@ -139,6 +147,27 @@ export function DashboardView() {
     ]);
   }
 
+  function handleCreateCategory(category: string) {
+    const formattedCategory = category.trim();
+
+    if (!formattedCategory) {
+      return;
+    }
+
+    setCategories((currentCategories) => {
+      const categoryAlreadyExists = currentCategories.some(
+        (currentCategory) =>
+          currentCategory.toLowerCase() === formattedCategory.toLowerCase(),
+      );
+
+      if (categoryAlreadyExists) {
+        return currentCategories;
+      }
+
+      return [...currentCategories, formattedCategory];
+    });
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
@@ -158,7 +187,9 @@ export function DashboardView() {
 
       {isModalOpen ? (
         <NewTransactionModal
+          categories={categories}
           onClose={() => setIsModalOpen(false)}
+          onCreateCategory={handleCreateCategory}
           onCreate={handleCreateTransaction}
         />
       ) : null}

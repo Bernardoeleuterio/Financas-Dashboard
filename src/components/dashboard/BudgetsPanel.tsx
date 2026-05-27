@@ -13,7 +13,8 @@ export function BudgetsPanel({ budgets }: BudgetsPanelProps) {
         Limites definidos por categoria.
       </p>
 
-      <div className="mt-6 space-y-5">
+      {budgets.length > 0 ? (
+        <div className="mt-6 space-y-5">
         {budgets.map((budget) => {
           const percentage = Math.round((budget.spent / budget.limit) * 100);
 
@@ -36,19 +37,13 @@ export function BudgetsPanel({ budgets }: BudgetsPanelProps) {
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-        <p className="text-sm font-semibold text-emerald-900">
-          Economia prevista
-        </p>
-        <strong className="mt-2 block text-2xl font-semibold text-emerald-800">
-          R$ 3.565,80
-        </strong>
-        <p className="mt-2 text-sm leading-6 text-emerald-800">
-          Mantendo este ritmo, voce fecha o mes com 53% da receita livre.
-        </p>
-      </div>
+        </div>
+      ) : (
+        <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-500">
+          Nenhum orcamento cadastrado ainda. Em breve voce podera definir
+          limites por categoria.
+        </div>
+      )}
     </aside>
   );
 }

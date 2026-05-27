@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowDownLeft, ArrowUpRight, Goal, Wallet } from "lucide-react";
 import { BudgetsPanel } from "@/components/dashboard/BudgetsPanel";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
@@ -9,57 +10,15 @@ import { MonthlyChart } from "@/components/dashboard/MonthlyChart";
 import { NewTransactionModal } from "@/components/dashboard/NewTransactionModal";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
+import { getSavedFinancialProfile } from "@/lib/financialProfileStorage";
+import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import type {
+  Budget,
+  FinancialProfile,
   NewTransactionInput,
+  SummaryCard,
   Transaction,
 } from "@/components/dashboard/types";
-
-const summaryCards = [
-  {
-    label: "Saldo atual",
-    value: "R$ 8.420,90",
-    change: "+12,4% este mes",
-    icon: Wallet,
-    tone: "bg-emerald-100 text-emerald-700",
-  },
-  {
-    label: "Receitas",
-    value: "R$ 6.750,00",
-    change: "+R$ 850 vs. abril",
-    icon: ArrowUpRight,
-    tone: "bg-sky-100 text-sky-700",
-  },
-  {
-    label: "Despesas",
-    value: "R$ 3.184,20",
-    change: "47% da receita",
-    icon: ArrowDownLeft,
-    tone: "bg-rose-100 text-rose-700",
-  },
-  {
-    label: "Meta guardada",
-    value: "R$ 2.150,00",
-    change: "72% da meta",
-    icon: Goal,
-    tone: "bg-amber-100 text-amber-700",
-  },
-];
-
-const monthlyData = [
-  { month: "Jan", receitas: 5200, despesas: 3100 },
-  { month: "Fev", receitas: 5900, despesas: 3400 },
-  { month: "Mar", receitas: 6100, despesas: 3980 },
-  { month: "Abr", receitas: 5900, despesas: 3600 },
-  { month: "Mai", receitas: 6750, despesas: 3184 },
-  { month: "Jun", receitas: 6400, despesas: 3350 },
-];
-
-const categoryData = [
-  { name: "Moradia", value: 1240, color: "#2563eb" },
-  { name: "Alimentacao", value: 860, color: "#16a34a" },
-  { name: "Transporte", value: 420, color: "#f59e0b" },
-  { name: "Lazer", value: 330, color: "#e11d48" },
-];
 
 const initialCategories = [
   "Alimentacao",
@@ -69,46 +28,9 @@ const initialCategories = [
   "Receita",
 ];
 
-const initialTransactions: Transaction[] = [
-  {
-    title: "Salario",
-    category: "Receita",
-    date: "20 mai",
-    amount: "+ R$ 5.800,00",
-    paymentMethod: "Pix",
-    type: "income" as const,
-  },
-  {
-    title: "Mercado semanal",
-    category: "Alimentacao",
-    date: "19 mai",
-    amount: "- R$ 286,40",
-    paymentMethod: "Cartao",
-    type: "expense" as const,
-  },
-  {
-    title: "Internet",
-    category: "Moradia",
-    date: "18 mai",
-    amount: "- R$ 119,90",
-    paymentMethod: "Boleto",
-    type: "expense" as const,
-  },
-  {
-    title: "Freelance landing page",
-    category: "Receita",
-    date: "16 mai",
-    amount: "+ R$ 950,00",
-    paymentMethod: "Pix",
-    type: "income" as const,
-  },
-];
-
-const budgets = [
-  { name: "Alimentacao", spent: 860, limit: 1200, color: "bg-emerald-500" },
-  { name: "Transporte", spent: 420, limit: 650, color: "bg-amber-500" },
-  { name: "Lazer", spent: 330, limit: 500, color: "bg-rose-500" },
-];
+const initialTransactions: Transaction[] = [];
+const budgets: Budget[] = [];
+const categoryColors = ["#2563eb", "#16a34a", "#f59e0b", "#e11d48", "#7c3aed"];
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -124,17 +46,129 @@ function formatTransactionDate(date: string) {
     .replace(".", "");
 }
 
+function buildSummaryCards(profile: FinancialProfile | null): SummaryCard[] {
+  const currentBalance = profile?.currentBalance ?? 8420.9;
+  const monthlyIncome = profile?.monthlyIncome ?? 6750;
+  const monthlyExpenses = profile?.monthlyExpenses ?? 0;
+  const monthlySavingGoal = profile?.monthlySavingGoal ?? 0;
+  const freeIncome = Math.max(monthlyIncome - monthlyExpenses, 0);
+  const hasExpenses = profile?.monthlyExpenses !== null && profile?.monthlyExpenses !== undefined;
+  const hasSavingGoal =
+    profile?.monthlySavingGoal !== null &&
+    profile?.monthlySavingGoal !== undefined;
+  const expensePercentage =
+    monthlyIncome > 0 && hasExpenses
+      ? Math.round((monthlyExpenses / monthlyIncome) * 100)
+      : 0;
+
+  return [
+    {
+      label: "Saldo atual",
+      value: currencyFormatter.format(currentBalance),
+      change: profile ? profile.financialGoal : "+12,4% este mes",
+      icon: Wallet,
+      tone: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      label: "Receitas",
+      value: currencyFormatter.format(monthlyIncome),
+      change: "Renda mensal informada",
+      icon: ArrowUpRight,
+      tone: "bg-sky-100 text-sky-700",
+    },
+    {
+      label: "Despesas",
+      value: hasExpenses ? currencyFormatter.format(monthlyExpenses) : "A definir",
+      change: hasExpenses ? `${expensePercentage}% da receita` : "Informe quando souber",
+      icon: ArrowDownLeft,
+      tone: "bg-rose-100 text-rose-700",
+    },
+    {
+      label: "Meta mensal",
+      value: hasSavingGoal
+        ? currencyFormatter.format(monthlySavingGoal)
+        : "A definir",
+      change: hasSavingGoal
+        ? `${currencyFormatter.format(freeIncome)} livre previsto`
+        : "Voce pode ajustar depois",
+      icon: Goal,
+      tone: "bg-amber-100 text-amber-700",
+    },
+  ];
+}
+
+function buildMonthlyData(transactions: Transaction[]) {
+  const currentMonth = new Date().toLocaleDateString("pt-BR", {
+    month: "short",
+  });
+
+  return [
+    {
+      month: currentMonth.replace(".", ""),
+      receitas: transactions
+        .filter((transaction) => transaction.type === "income")
+        .reduce((total, transaction) => total + transaction.numericAmount, 0),
+      despesas: transactions
+        .filter((transaction) => transaction.type === "expense")
+        .reduce((total, transaction) => total + transaction.numericAmount, 0),
+    },
+  ];
+}
+
+function buildCategoryData(transactions: Transaction[]) {
+  const totalsByCategory = transactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce<Record<string, number>>((totals, transaction) => {
+      totals[transaction.category] =
+        (totals[transaction.category] ?? 0) + transaction.numericAmount;
+
+      return totals;
+    }, {});
+
+  return Object.entries(totalsByCategory).map(([name, value], index) => ({
+    name,
+    value,
+    color: categoryColors[index % categoryColors.length],
+  }));
+}
+
 export function DashboardView() {
+  const router = useRouter();
   const [chartsReady, setChartsReady] = useState(false);
   const [categories, setCategories] = useState(initialCategories);
+  const [financialProfile, setFinancialProfile] =
+    useState<FinancialProfile | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState(initialTransactions);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setChartsReady(true));
+    const frame = requestAnimationFrame(async () => {
+      setChartsReady(true);
+
+      let currentUserId: string | null = null;
+
+      if (hasSupabaseConfig) {
+        const { data } = await supabase.auth.getUser();
+        currentUserId = data.user?.id ?? null;
+        setIsAuthenticated(Boolean(currentUserId));
+      }
+
+      const savedProfile = getSavedFinancialProfile(currentUserId);
+
+      if (savedProfile) {
+        setFinancialProfile(savedProfile);
+        return;
+      }
+
+      if (currentUserId) {
+        router.push("/onboarding");
+        return;
+      }
+    });
 
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [router]);
 
   function handleCreateTransaction(transaction: NewTransactionInput) {
     const signal = transaction.type === "income" ? "+" : "-";
@@ -144,7 +178,9 @@ export function DashboardView() {
         title: transaction.title,
         category: transaction.category,
         date: formatTransactionDate(transaction.date),
+        rawDate: transaction.date,
         amount: `${signal} ${currencyFormatter.format(transaction.amount)}`,
+        numericAmount: transaction.amount,
         paymentMethod: transaction.paymentMethod,
         type: transaction.type,
       },
@@ -176,12 +212,15 @@ export function DashboardView() {
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <DashboardHeader onNewTransaction={() => setIsModalOpen(true)} />
-        <SummaryCards cards={summaryCards} />
+        <DashboardHeader
+          isAuthenticated={isAuthenticated}
+          onNewTransaction={() => setIsModalOpen(true)}
+        />
+        <SummaryCards cards={buildSummaryCards(financialProfile)} />
 
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
-          <MonthlyChart data={monthlyData} isReady={chartsReady} />
-          <CategoryChart data={categoryData} isReady={chartsReady} />
+          <MonthlyChart data={buildMonthlyData(transactions)} isReady={chartsReady} />
+          <CategoryChart data={buildCategoryData(transactions)} isReady={chartsReady} />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
@@ -198,6 +237,7 @@ export function DashboardView() {
           onCreate={handleCreateTransaction}
         />
       ) : null}
+
     </main>
   );
 }

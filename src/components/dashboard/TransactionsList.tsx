@@ -27,11 +27,12 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
         </div>
       </div>
 
-      <div className="divide-y divide-slate-100">
-        {transactions.map((transaction) => (
+      {transactions.length > 0 ? (
+        <div className="divide-y divide-slate-100">
+          {transactions.map((transaction) => (
           <div
             className="grid gap-3 p-5 sm:grid-cols-[1fr_auto] sm:items-center"
-            key={`${transaction.title}-${transaction.date}`}
+            key={`${transaction.title}-${transaction.rawDate}-${transaction.amount}`}
           >
             <div className="flex items-center gap-3">
               <span
@@ -67,8 +68,14 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
               {transaction.amount}
             </strong>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-8 text-center text-sm leading-6 text-slate-500">
+          Nenhuma transacao cadastrada ainda. Use o botao Nova transacao para
+          comecar.
+        </div>
+      )}
     </section>
   );
 }

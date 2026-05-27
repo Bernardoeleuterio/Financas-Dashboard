@@ -24,7 +24,9 @@ export type Transaction = {
   title: string;
   category: string;
   date: string;
+  rawDate: string;
   amount: string;
+  numericAmount: number;
   paymentMethod: string;
   type: "income" | "expense";
 };
@@ -36,6 +38,17 @@ export type NewTransactionInput = {
   amount: number;
   paymentMethod: string;
   type: "income" | "expense";
+};
+
+export type FinancialProfile = {
+  fullName: string;
+  occupation: string;
+  age: number;
+  currentBalance: number;
+  monthlyIncome: number;
+  monthlyExpenses: number | null;
+  monthlySavingGoal: number | null;
+  financialGoal: string;
 };
 
 export type Budget = {

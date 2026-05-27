@@ -8,6 +8,8 @@ type CategoryChartProps = {
 };
 
 export function CategoryChart({ data, isReady }: CategoryChartProps) {
+  const hasData = data.length > 0;
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5">
@@ -20,7 +22,7 @@ export function CategoryChart({ data, isReady }: CategoryChartProps) {
       </div>
 
       <div className="h-56">
-        {isReady ? (
+        {isReady && hasData ? (
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
               <Pie
@@ -42,11 +44,14 @@ export function CategoryChart({ data, isReady }: CategoryChartProps) {
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full rounded-md bg-slate-100" />
+          <div className="flex h-full items-center justify-center rounded-md bg-slate-100 px-6 text-center text-sm leading-6 text-slate-500">
+            As despesas por categoria aparecem depois que voce cadastrar uma
+            despesa.
+          </div>
         )}
       </div>
 
-      <div className="mt-4 space-y-3">
+      {hasData ? <div className="mt-4 space-y-3">
         {data.map((category) => (
           <div
             className="flex items-center justify-between gap-3 text-sm"
@@ -64,7 +69,7 @@ export function CategoryChart({ data, isReady }: CategoryChartProps) {
             </strong>
           </div>
         ))}
-      </div>
+      </div> : null}
     </section>
   );
 }

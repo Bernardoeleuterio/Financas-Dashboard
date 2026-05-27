@@ -1,0 +1,170 @@
+.page {
+  min-height: 100vh;
+  padding: 32px 16px;
+  background: #f1f5f9;
+  color: #020617;
+}
+
+.shell {
+  width: min(100%, 840px);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.backLink {
+  color: #047857;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgb(15 23 42 / 0.1);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.title {
+  color: #020617;
+  font-size: 28px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.description {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.avatar {
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #047857;
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.content {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.sectionTitle {
+  color: #020617;
+  font-size: 16px;
+  font-weight: 850;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.info {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.value {
+  margin-top: 6px;
+  color: #020617;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+  padding: 20px 24px;
+}
+
+.editButton,
+.signOutButton {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #fecdd3;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #be123c;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 16px;
+}
+
+.editButton {
+  border: 1px solid #059669;
+  background: #059669;
+  color: #ffffff;
+}
+
+.editButton:hover {
+  background: #047857;
+}
+
+.signOutButton:hover {
+  background: #ffe4e6;
+}
+
+@media (max-width: 640px) {
+  .header,
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+    justify-content: stretch;
+  }
+
+  .editButton,
+  .signOutButton {
+    width: 100%;
+  }
+}

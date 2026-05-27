@@ -16,6 +16,10 @@ type MonthlyChartProps = {
 };
 
 export function MonthlyChart({ data, isReady }: MonthlyChartProps) {
+  const hasData = data.some(
+    (item) => item.receitas > 0 || item.despesas > 0,
+  );
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -40,7 +44,7 @@ export function MonthlyChart({ data, isReady }: MonthlyChartProps) {
       </div>
 
       <div className="h-80">
-        {isReady ? (
+        {isReady && hasData ? (
           <ResponsiveContainer height="100%" width="100%">
             <BarChart data={data}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" />
@@ -65,7 +69,10 @@ export function MonthlyChart({ data, isReady }: MonthlyChartProps) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full rounded-md bg-slate-100" />
+          <div className="flex h-full items-center justify-center rounded-md bg-slate-100 px-6 text-center text-sm leading-6 text-slate-500">
+            Cadastre sua primeira transacao para ver receitas e despesas no
+            grafico.
+          </div>
         )}
       </div>
     </section>

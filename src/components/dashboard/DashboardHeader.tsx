@@ -1,10 +1,15 @@
-import { Bell, CalendarDays, Plus } from "lucide-react";
+import { Bell, CalendarDays, Plus, UserCircle } from "lucide-react";
+import Link from "next/link";
 
 type DashboardHeaderProps = {
+  isAuthenticated: boolean;
   onNewTransaction: () => void;
 };
 
-export function DashboardHeader({ onNewTransaction }: DashboardHeaderProps) {
+export function DashboardHeader({
+  isAuthenticated,
+  onNewTransaction,
+}: DashboardHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
       <div>
@@ -18,6 +23,23 @@ export function DashboardHeader({ onNewTransaction }: DashboardHeaderProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {isAuthenticated ? (
+          <Link
+            aria-label="Minha conta"
+            className="inline-flex size-10 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            href="/profile"
+            title="Minha conta"
+          >
+            <UserCircle className="size-5" />
+          </Link>
+        ) : (
+          <Link
+            className="inline-flex h-10 items-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            href="/auth/login"
+          >
+            Entrar
+          </Link>
+        )}
         <button
           className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
           type="button"

@@ -7,26 +7,20 @@ import { BudgetsPanel } from "@/components/dashboard/BudgetsPanel";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthlyChart } from "@/components/dashboard/MonthlyChart";
-import { NewTransactionModal } from "@/components/dashboard/NewTransactionModal";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
-import { getSavedFinancialProfile } from "@/lib/financialProfileStorage";
+import { AppShell } from "@/components/layout/AppShell";
+import {
+  getFinancialProfile,
+  getTransactions,
+} from "@/lib/financeRepository";
 import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import type {
   Budget,
   FinancialProfile,
-  NewTransactionInput,
   SummaryCard,
   Transaction,
 } from "@/components/dashboard/types";
-
-const initialCategories = [
-  "Alimentacao",
-  "Moradia",
-  "Transporte",
-  "Lazer",
-  "Receita",
-];
 
 const initialTransactions: Transaction[] = [];
 const budgets: Budget[] = [];
@@ -37,18 +31,9 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-function formatTransactionDate(date: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-  })
-    .format(new Date(`${date}T00:00:00`))
-    .replace(".", "");
-}
-
 function buildSummaryCards(profile: FinancialProfile | null): SummaryCard[] {
-  const currentBalance = profile?.currentBalance ?? 8420.9;
-  const monthlyIncome = profile?.monthlyIncome ?? 6750;
+  const currentBalance = profile?.currentBalance ?? 0;
+  const monthlyIncome = profile?.monthlyIncome ?? 0;
   const monthlyExpenses = profile?.monthlyExpenses ?? 0;
   const monthlySavingGoal = profile?.monthlySavingGoal ?? 0;
   const freeIncome = Math.max(monthlyIncome - monthlyExpenses, 0);
@@ -135,87 +120,44 @@ function buildCategoryData(transactions: Transaction[]) {
 export function DashboardView() {
   const router = useRouter();
   const [chartsReady, setChartsReady] = useState(false);
-  const [categories, setCategories] = useState(initialCategories);
   const [financialProfile, setFinancialProfile] =
     useState<FinancialProfile | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactions, setTransactions] = useState(initialTransactions);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(async () => {
       setChartsReady(true);
 
-      let currentUserId: string | null = null;
-
-      if (hasSupabaseConfig) {
-        const { data } = await supabase.auth.getUser();
-        currentUserId = data.user?.id ?? null;
-        setIsAuthenticated(Boolean(currentUserId));
-      }
-
-      const savedProfile = getSavedFinancialProfile(currentUserId);
-
-      if (savedProfile) {
-        setFinancialProfile(savedProfile);
+      if (!hasSupabaseConfig) {
         return;
       }
 
-      if (currentUserId) {
+      const { data } = await supabase.auth.getUser();
+      const currentUserId = data.user?.id ?? null;
+
+      if (!currentUserId) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const profile = await getFinancialProfile(currentUserId);
+
+      if (!profile) {
         router.push("/onboarding");
         return;
       }
+
+      setFinancialProfile(profile);
+      setTransactions(await getTransactions(currentUserId));
     });
 
     return () => cancelAnimationFrame(frame);
   }, [router]);
 
-  function handleCreateTransaction(transaction: NewTransactionInput) {
-    const signal = transaction.type === "income" ? "+" : "-";
-
-    setTransactions((currentTransactions) => [
-      {
-        title: transaction.title,
-        category: transaction.category,
-        date: formatTransactionDate(transaction.date),
-        rawDate: transaction.date,
-        amount: `${signal} ${currencyFormatter.format(transaction.amount)}`,
-        numericAmount: transaction.amount,
-        paymentMethod: transaction.paymentMethod,
-        type: transaction.type,
-      },
-      ...currentTransactions,
-    ]);
-  }
-
-  function handleCreateCategory(category: string) {
-    const formattedCategory = category.trim();
-
-    if (!formattedCategory) {
-      return;
-    }
-
-    setCategories((currentCategories) => {
-      const categoryAlreadyExists = currentCategories.some(
-        (currentCategory) =>
-          currentCategory.toLowerCase() === formattedCategory.toLowerCase(),
-      );
-
-      if (categoryAlreadyExists) {
-        return currentCategories;
-      }
-
-      return [...currentCategories, formattedCategory];
-    });
-  }
-
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-950">
+    <AppShell>
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <DashboardHeader
-          isAuthenticated={isAuthenticated}
-          onNewTransaction={() => setIsModalOpen(true)}
-        />
+        <DashboardHeader />
         <SummaryCards cards={buildSummaryCards(financialProfile)} />
 
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
@@ -228,16 +170,6 @@ export function DashboardView() {
           <BudgetsPanel budgets={budgets} />
         </div>
       </section>
-
-      {isModalOpen ? (
-        <NewTransactionModal
-          categories={categories}
-          onClose={() => setIsModalOpen(false)}
-          onCreateCategory={handleCreateCategory}
-          onCreate={handleCreateTransaction}
-        />
-      ) : null}
-
-    </main>
+    </AppShell>
   );
 }

@@ -1,15 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { FinancialProfileModal } from "@/components/dashboard/FinancialProfileModal";
 import type { FinancialProfile } from "@/components/dashboard/types";
-import {
-  getSavedFinancialProfile,
-  saveFinancialProfile,
-} from "@/lib/financialProfileStorage";
+import { AppShell } from "@/components/layout/AppShell";
+import { getFinancialProfile, saveProfile } from "@/lib/financeRepository";
 import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import styles from "@/styles/Profile.module.css";
 
@@ -44,7 +41,7 @@ export default function ProfilePage() {
       }
 
       setUser(data.user);
-      setProfile(getSavedFinancialProfile(data.user.id));
+      setProfile(await getFinancialProfile(data.user.id));
     }
 
     loadProfile();
@@ -55,9 +52,13 @@ export default function ProfilePage() {
     router.push("/auth/login");
   }
 
-  function handleSaveProfile(updatedProfile: FinancialProfile) {
+  async function handleSaveProfile(updatedProfile: FinancialProfile) {
+    if (!user) {
+      return;
+    }
+
+    await saveProfile(user.id, updatedProfile);
     setProfile(updatedProfile);
-    saveFinancialProfile(updatedProfile, user?.id);
     setIsEditingProfile(false);
   }
 
@@ -71,21 +72,16 @@ export default function ProfilePage() {
       .toUpperCase() || "U";
 
   return (
-    <main className={styles.page}>
-      <section className={styles.shell}>
-        <div className={styles.topbar}>
-          <Link className={styles.backLink} href="/">
-            Voltar para dashboard
-          </Link>
-        </div>
-
+    <AppShell>
+      <main className={styles.page}>
+        <section className={styles.shell}>
         <article className={styles.card}>
           <header className={styles.header}>
             <div>
               <h1 className={styles.title}>Minha conta</h1>
               <p className={styles.description}>
-                Veja suas informacoes pessoais e financeiras salvas neste
-                navegador.
+                Veja suas informacoes pessoais e financeiras salvas na sua
+                conta.
               </p>
             </div>
             <span className={styles.avatar}>{initials}</span>
@@ -170,15 +166,16 @@ export default function ProfilePage() {
             </button>
           </div>
         </article>
-      </section>
+        </section>
 
-      {isEditingProfile ? (
-        <FinancialProfileModal
-          initialProfile={profile}
-          onClose={() => setIsEditingProfile(false)}
-          onSave={handleSaveProfile}
-        />
-      ) : null}
-    </main>
+        {isEditingProfile ? (
+          <FinancialProfileModal
+            initialProfile={profile}
+            onClose={() => setIsEditingProfile(false)}
+            onSave={handleSaveProfile}
+          />
+        ) : null}
+      </main>
+    </AppShell>
   );
 }

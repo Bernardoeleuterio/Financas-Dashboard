@@ -21,6 +21,8 @@ export type CategoryExpense = {
 };
 
 export type Transaction = {
+  id: string;
+  debtId: string | null;
   title: string;
   category: string;
   date: string;
@@ -34,6 +36,7 @@ export type Transaction = {
 export type NewTransactionInput = {
   title: string;
   category: string;
+  debtId: string | null;
   date: string;
   amount: number;
   paymentMethod: string;
@@ -57,3 +60,20 @@ export type Budget = {
   limit: number;
   color: string;
 };
+
+export type Debt = {
+  id: string;
+  debtType: "installment" | "credit_card";
+  creditor: string;
+  description: string;
+  totalAmount: number | null;
+  installmentAmount: number | null;
+  totalInstallments: number | null;
+  paidInstallments: number | null;
+  dueDay: number | null;
+  nextDueDate: string | null;
+  status: "active" | "paid" | "overdue";
+  notes: string | null;
+};
+
+export type NewDebtInput = Omit<Debt, "id" | "status">;

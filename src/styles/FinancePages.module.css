@@ -1,0 +1,238 @@
+.page {
+  display: grid;
+  gap: 22px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.eyebrow {
+  color: #087f5b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.title {
+  margin-top: 5px;
+  color: #17202a;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.description {
+  max-width: 660px;
+  margin-top: 8px;
+  color: #6b7780;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 15px;
+}
+
+.primaryButton {
+  border: 1px solid #087f5b;
+  background: #087f5b;
+  color: #ffffff;
+}
+
+.primaryButton:hover {
+  background: #066b4c;
+}
+
+.secondaryButton {
+  border: 1px solid #d6dde1;
+  background: #ffffff;
+  color: #45515a;
+}
+
+.dangerButton {
+  border: 1px solid #f4c7ce;
+  background: #fff4f5;
+  color: #b4233c;
+}
+
+.summaryGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summaryItem {
+  border: 1px solid #dfe5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.summaryLabel {
+  color: #73808a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summaryValue {
+  display: block;
+  margin-top: 8px;
+  color: #17202a;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.panel {
+  border: 1px solid #dfe5e8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5eaed;
+}
+
+.panelTitle {
+  color: #17202a;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.monthInput {
+  height: 38px;
+  border: 1px solid #ccd5da;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #45515a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.empty {
+  padding: 40px 20px;
+  color: #74808a;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.debtGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 18px;
+}
+
+.debtCard {
+  border: 1px solid #dfe5e8;
+  border-radius: 8px;
+  padding: 17px;
+}
+
+.debtTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.debtCreditor {
+  color: #17202a;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.debtDescription {
+  margin-top: 4px;
+  color: #74808a;
+  font-size: 13px;
+}
+
+.status {
+  border-radius: 999px;
+  background: #fff2cc;
+  color: #755700;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 8px;
+}
+
+.statusPaid {
+  background: #dcf5e9;
+  color: #087f5b;
+}
+
+.debtAmount {
+  display: block;
+  margin-top: 18px;
+  color: #17202a;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.debtMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: #66727b;
+  font-size: 12px;
+}
+
+.progress {
+  height: 7px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf1f2;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: inherit;
+  background: #087f5b;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .summaryGrid,
+  .debtGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryButton {
+    width: 100%;
+  }
+}

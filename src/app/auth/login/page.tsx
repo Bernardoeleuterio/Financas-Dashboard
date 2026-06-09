@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { getSavedFinancialProfile } from "@/lib/financialProfileStorage";
+import { getFinancialProfile } from "@/lib/financeRepository";
 import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import styles from "@/styles/Auth.module.css";
 
@@ -37,7 +37,9 @@ export default function LoginPage() {
       return;
     }
 
-    const savedProfile = getSavedFinancialProfile(data.user?.id);
+    const savedProfile = data.user
+      ? await getFinancialProfile(data.user.id)
+      : null;
 
     router.push(savedProfile ? "/" : "/onboarding");
   }

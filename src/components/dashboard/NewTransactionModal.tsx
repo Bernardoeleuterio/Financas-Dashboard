@@ -6,46 +6,58 @@ import type { NewTransactionInput } from "./types";
 
 type NewTransactionModalProps = {
   categories: string[];
+  creditCards: { id: string; name: string }[];
   onClose: () => void;
-  onCreate: (transaction: NewTransactionInput) => void;
-  onCreateCategory: (category: string) => void;
+  onCreate: (transaction: NewTransactionInput) => Promise<void>;
+  onCreateCategory: (category: string) => Promise<string | null>;
 };
 
 export function NewTransactionModal({
   categories,
+  creditCards,
   onClose,
   onCreate,
   onCreateCategory,
 }: NewTransactionModalProps) {
   const [selectedCategory, setSelectedCategory] = useState(categories[0] ?? "");
   const [newCategory, setNewCategory] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Pix");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
-    onCreate({
+    await onCreate({
       title: String(formData.get("title")),
       category: selectedCategory,
+      debtId:
+        paymentMethod === "Cartao"
+          ? String(formData.get("debtId"))
+          : null,
       date: String(formData.get("date")),
       amount: Number(formData.get("amount")),
-      paymentMethod: String(formData.get("paymentMethod")),
+      paymentMethod,
       type: String(formData.get("type")) as NewTransactionInput["type"],
     });
 
     onClose();
   }
 
-  function handleCreateCategory() {
+  async function handleCreateCategory() {
     const formattedCategory = newCategory.trim();
 
     if (!formattedCategory) {
       return;
     }
 
-    onCreateCategory(formattedCategory);
-    setSelectedCategory(formattedCategory);
+    const createdCategory = await onCreateCategory(formattedCategory);
+
+    if (!createdCategory) {
+      return;
+    }
+
+    setSelectedCategory(createdCategory);
     setNewCategory("");
   }
 
@@ -131,8 +143,9 @@ export function NewTransactionModal({
               <span className={styles.label}>Forma de pagamento</span>
               <select
                 className={styles.select}
-                defaultValue="Pix"
                 name="paymentMethod"
+                onChange={(event) => setPaymentMethod(event.target.value)}
+                value={paymentMethod}
               >
                 <option>Pix</option>
                 <option>Cartao</option>
@@ -141,6 +154,26 @@ export function NewTransactionModal({
               </select>
             </label>
           </div>
+
+          {paymentMethod === "Cartao" ? (
+            <label className={styles.field}>
+              <span className={styles.label}>Qual cartao foi utilizado?</span>
+              <select className={styles.select} name="debtId" required>
+                <option value="">Selecione um cartao</option>
+                {creditCards.map((card) => (
+                  <option key={card.id} value={card.id}>
+                    {card.name}
+                  </option>
+                ))}
+              </select>
+              {creditCards.length === 0 ? (
+                <span className={styles.description}>
+                  Cadastre um cartao na pagina Dividas antes de registrar esta
+                  compra.
+                </span>
+              ) : null}
+            </label>
+          ) : null}
 
           <div className={styles.grid}>
             <label className={styles.field}>

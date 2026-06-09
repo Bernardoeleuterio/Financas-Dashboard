@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { saveFinancialProfile } from "@/lib/financialProfileStorage";
+import { saveProfile } from "@/lib/financeRepository";
 import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import styles from "@/styles/Onboarding.module.css";
 
@@ -19,6 +19,8 @@ function optionalNumber(value: FormDataEntryValue | null) {
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,13 +36,21 @@ export default function OnboardingPage() {
     loadUser();
   }, []);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
+
+    if (!userId) {
+      setError("Sua sessao expirou. Entre novamente para continuar.");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
 
-    saveFinancialProfile(
-      {
+    setIsLoading(true);
+
+    try {
+      await saveProfile(userId, {
         fullName: String(formData.get("fullName")),
         occupation: String(formData.get("occupation")),
         age: Number(formData.get("age")),
@@ -49,11 +59,12 @@ export default function OnboardingPage() {
         monthlyExpenses: optionalNumber(formData.get("monthlyExpenses")),
         monthlySavingGoal: optionalNumber(formData.get("monthlySavingGoal")),
         financialGoal: String(formData.get("financialGoal")),
-      },
-      userId,
-    );
-
-    router.push("/");
+      });
+      router.push("/");
+    } catch {
+      setError("Nao foi possivel salvar seu perfil. Tente novamente.");
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -70,6 +81,7 @@ export default function OnboardingPage() {
 
         <div className={styles.card}>
           <form className={styles.form} onSubmit={handleSubmit}>
+            {error ? <p className={styles.error}>{error}</p> : null}
             <div className={styles.sectionHeader}>
               <p className={styles.step}>Etapa 1</p>
               <h2 className={styles.sectionTitle}>Dados basicos</h2>
@@ -207,8 +219,12 @@ export default function OnboardingPage() {
               </select>
             </label>
 
-            <button className={styles.button} type="submit">
-              Finalizar configuracao
+            <button
+              className={styles.button}
+              disabled={isLoading}
+              type="submit"
+            >
+              {isLoading ? "Salvando..." : "Finalizar configuracao"}
             </button>
           </form>
         </div>

@@ -22,6 +22,8 @@ import {
 import { supabase } from "@/lib/supabaseClient";
 import styles from "@/styles/FinancePages.module.css";
 
+type DebtTypeFilter = "all" | Debt["debtType"];
+
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
@@ -63,6 +65,8 @@ export default function DebtsPage() {
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7),
   );
+  const [debtTypeFilter, setDebtTypeFilter] =
+    useState<DebtTypeFilter>("all");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -101,9 +105,18 @@ export default function DebtsPage() {
   }
 
   function getInvoiceTotal(debtId: string) {
-    return getInvoiceTransactions(debtId).reduce(
-      (total, transaction) => total + transaction.numericAmount,
-      0,
+    const debt = debts.find((item) => item.id === debtId);
+    const openingAmount =
+      debt?.openingInvoiceMonth?.slice(0, 7) === selectedMonth
+        ? debt.openingInvoiceAmount ?? 0
+        : 0;
+
+    return (
+      openingAmount +
+      getInvoiceTransactions(debtId).reduce(
+        (total, transaction) => total + transaction.numericAmount,
+        0,
+      )
     );
   }
 
@@ -134,8 +147,9 @@ export default function DebtsPage() {
 
   const visibleDebts = debts.filter(
     (debt) =>
-      debt.debtType === "credit_card" ||
-      isInstallmentDueInMonth(debt, selectedMonth),
+      (debtTypeFilter === "all" || debt.debtType === debtTypeFilter) &&
+      (debt.debtType === "credit_card" ||
+        isInstallmentDueInMonth(debt, selectedMonth)),
   );
   const monthlyCommitment = visibleDebts.reduce((total, debt) => {
     if (debt.debtType === "credit_card") {
@@ -209,13 +223,42 @@ export default function DebtsPage() {
         <section className={styles.panel}>
           <header className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>Vencimentos e faturas</h2>
-            <input
-              aria-label="Selecionar mes"
-              className={styles.monthInput}
-              onChange={(event) => setSelectedMonth(event.target.value)}
-              type="month"
-              value={selectedMonth}
-            />
+            <div className={styles.filters}>
+              <div
+                aria-label="Filtrar compromissos por tipo"
+                className={styles.segmentedControl}
+                role="group"
+              >
+                {[
+                  { label: "Todos", value: "all" },
+                  { label: "Dividas", value: "installment" },
+                  { label: "Cartoes", value: "credit_card" },
+                ].map((option) => (
+                  <button
+                    aria-pressed={debtTypeFilter === option.value}
+                    className={`${styles.segmentedButton} ${
+                      debtTypeFilter === option.value
+                        ? styles.segmentedButtonActive
+                        : ""
+                    }`}
+                    key={option.value}
+                    onClick={() =>
+                      setDebtTypeFilter(option.value as DebtTypeFilter)
+                    }
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <input
+                aria-label="Selecionar mes"
+                className={styles.monthInput}
+                onChange={(event) => setSelectedMonth(event.target.value)}
+                type="month"
+                value={selectedMonth}
+              />
+            </div>
           </header>
 
           {visibleDebts.length > 0 ? (
@@ -329,7 +372,13 @@ export default function DebtsPage() {
             </div>
           ) : (
             <p className={styles.empty}>
-              Nenhum compromisso encontrado para {monthLabel}.
+              Nenhum{" "}
+              {debtTypeFilter === "installment"
+                ? "divida"
+                : debtTypeFilter === "credit_card"
+                  ? "cartao"
+                  : "compromisso"}{" "}
+              encontrado para {monthLabel}.
             </p>
           )}
         </section>
@@ -351,6 +400,7 @@ export default function DebtsPage() {
           debt={selectedDebt}
           invoiceTransactions={getInvoiceTransactions(selectedDebt.id)}
           monthLabel={monthLabel}
+          selectedMonth={selectedMonth}
           onClose={() => setSelectedDebt(null)}
         />
       ) : null}

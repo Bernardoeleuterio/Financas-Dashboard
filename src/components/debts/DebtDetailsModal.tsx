@@ -11,6 +11,7 @@ type DebtDetailsModalProps = {
   debt: Debt;
   invoiceTransactions: Transaction[];
   monthLabel: string;
+  selectedMonth: string;
   onClose: () => void;
 };
 
@@ -18,12 +19,19 @@ export function DebtDetailsModal({
   debt,
   invoiceTransactions,
   monthLabel,
+  selectedMonth,
   onClose,
 }: DebtDetailsModalProps) {
-  const invoiceTotal = invoiceTransactions.reduce(
-    (total, transaction) => total + transaction.numericAmount,
-    0,
-  );
+  const openingAmount =
+    debt.openingInvoiceMonth?.slice(0, 7) === selectedMonth
+      ? debt.openingInvoiceAmount ?? 0
+      : 0;
+  const invoiceTotal =
+    openingAmount +
+    invoiceTransactions.reduce(
+      (total, transaction) => total + transaction.numericAmount,
+      0,
+    );
   const remaining =
     debt.totalInstallments !== null && debt.paidInstallments !== null
       ? debt.totalInstallments - debt.paidInstallments
@@ -61,6 +69,12 @@ export function DebtDetailsModal({
                   <p className={styles.detailLabel}>Vencimento</p>
                   <strong className={styles.detailValue}>
                     Dia {debt.dueDay}
+                  </strong>
+                </div>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>Valor inicial informado</p>
+                  <strong className={styles.detailValue}>
+                    {currencyFormatter.format(openingAmount)}
                   </strong>
                 </div>
               </div>

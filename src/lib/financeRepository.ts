@@ -238,7 +238,7 @@ export async function getDebts(userId: string) {
   const { data, error } = await supabase
     .from("debts")
     .select(
-      "id, debt_type, creditor, description, total_amount, installment_amount, total_installments, paid_installments, due_day, next_due_date, status, notes",
+      "id, debt_type, creditor, description, total_amount, installment_amount, total_installments, paid_installments, due_day, next_due_date, opening_invoice_amount, opening_invoice_month, status, notes",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -260,6 +260,11 @@ export async function getDebts(userId: string) {
     paidInstallments: debt.paid_installments,
     dueDay: debt.due_day,
     nextDueDate: debt.next_due_date,
+    openingInvoiceAmount:
+      debt.opening_invoice_amount === null
+        ? null
+        : Number(debt.opening_invoice_amount),
+    openingInvoiceMonth: debt.opening_invoice_month,
     status: debt.status,
     notes: debt.notes,
   }));
@@ -277,6 +282,8 @@ export async function createDebt(userId: string, debt: NewDebtInput) {
     paid_installments: debt.paidInstallments,
     due_day: debt.dueDay,
     next_due_date: debt.nextDueDate || null,
+    opening_invoice_amount: debt.openingInvoiceAmount,
+    opening_invoice_month: debt.openingInvoiceMonth,
     notes: debt.notes?.trim() || null,
   });
 
@@ -298,6 +305,8 @@ export async function updateDebt(debtId: string, debt: NewDebtInput) {
       paid_installments: debt.paidInstallments,
       due_day: debt.dueDay,
       next_due_date: debt.nextDueDate || null,
+      opening_invoice_amount: debt.openingInvoiceAmount,
+      opening_invoice_month: debt.openingInvoiceMonth,
       notes: debt.notes?.trim() || null,
     })
     .eq("id", debtId);

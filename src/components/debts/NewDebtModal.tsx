@@ -23,6 +23,9 @@ export function NewDebtModal({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const isCard = debtType === "credit_card";
+    const openingInvoiceAmount = String(
+      formData.get("openingInvoiceAmount") ?? "",
+    ).trim();
 
     await onSave({
       debtType,
@@ -42,6 +45,13 @@ export function NewDebtModal({
       nextDueDate: isCard
         ? null
         : String(formData.get("nextDueDate")) || null,
+      openingInvoiceAmount:
+        isCard && openingInvoiceAmount
+          ? Number(openingInvoiceAmount)
+          : null,
+      openingInvoiceMonth: isCard
+        ? `${String(formData.get("openingInvoiceMonth"))}-01`
+        : null,
       notes: String(formData.get("notes")) || null,
     });
 
@@ -184,19 +194,51 @@ export function NewDebtModal({
               </label>
             </>
           ) : (
-            <label className={styles.field}>
-              <span className={styles.label}>Dia de vencimento da fatura</span>
-              <input
-                className={styles.input}
-                defaultValue={initialDebt?.dueDay ?? ""}
-                max="31"
-                min="1"
-                name="dueDay"
-                placeholder="Ex: 10"
-                required
-                type="number"
-              />
-            </label>
+            <>
+              <label className={styles.field}>
+                <span className={styles.label}>Dia de vencimento da fatura</span>
+                <input
+                  className={styles.input}
+                  defaultValue={initialDebt?.dueDay ?? ""}
+                  max="31"
+                  min="1"
+                  name="dueDay"
+                  placeholder="Ex: 10"
+                  required
+                  type="number"
+                />
+              </label>
+
+              <div className={styles.grid}>
+                <label className={styles.field}>
+                  <span className={styles.label}>
+                    Valor que ja existe na fatura
+                  </span>
+                  <input
+                    className={styles.input}
+                    defaultValue={initialDebt?.openingInvoiceAmount ?? ""}
+                    min="0"
+                    name="openingInvoiceAmount"
+                    placeholder="Opcional, ex: 850"
+                    step="0.01"
+                    type="number"
+                  />
+                </label>
+                <label className={styles.field}>
+                  <span className={styles.label}>Mes dessa fatura</span>
+                  <input
+                    className={styles.input}
+                    defaultValue={
+                      initialDebt?.openingInvoiceMonth?.slice(0, 7) ??
+                      new Date().toISOString().slice(0, 7)
+                    }
+                    name="openingInvoiceMonth"
+                    required
+                    type="month"
+                  />
+                </label>
+              </div>
+            </>
           )}
 
           <label className={styles.field}>

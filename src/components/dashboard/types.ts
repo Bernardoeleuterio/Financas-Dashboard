@@ -72,6 +72,8 @@ export type Debt = {
   paidInstallments: number | null;
   dueDay: number | null;
   nextDueDate: string | null;
+  openingInvoiceAmount: number | null;
+  openingInvoiceMonth: string | null;
   status: "active" | "paid" | "overdue";
   notes: string | null;
 };

@@ -6,6 +6,7 @@ import { ArrowDownLeft, ArrowUpRight, Goal, Wallet } from "lucide-react";
 import { BudgetsPanel } from "@/components/dashboard/BudgetsPanel";
 import { CategoryChart } from "@/components/dashboard/CategoryChart";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { EditBalanceModal } from "@/components/dashboard/EditBalanceModal";
 import { MonthlyChart } from "@/components/dashboard/MonthlyChart";
 import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
@@ -13,6 +14,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import {
   getFinancialProfile,
   getTransactions,
+  updateCurrentBalance,
 } from "@/lib/financeRepository";
 import { hasSupabaseConfig, supabase } from "@/lib/supabaseClient";
 import type {
@@ -53,6 +55,7 @@ function buildSummaryCards(profile: FinancialProfile | null): SummaryCard[] {
       change: profile ? profile.financialGoal : "+12,4% este mes",
       icon: Wallet,
       tone: "bg-emerald-100 text-emerald-700",
+      editable: true,
     },
     {
       label: "Receitas",
@@ -122,7 +125,9 @@ export function DashboardView() {
   const [chartsReady, setChartsReady] = useState(false);
   const [financialProfile, setFinancialProfile] =
     useState<FinancialProfile | null>(null);
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   const [transactions, setTransactions] = useState(initialTransactions);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const frame = requestAnimationFrame(async () => {
@@ -140,6 +145,7 @@ export function DashboardView() {
         return;
       }
 
+      setUserId(currentUserId);
       const profile = await getFinancialProfile(currentUserId);
 
       if (!profile) {
@@ -154,11 +160,24 @@ export function DashboardView() {
     return () => cancelAnimationFrame(frame);
   }, [router]);
 
+  async function handleUpdateBalance(balance: number) {
+    if (!userId || !financialProfile) return;
+
+    await updateCurrentBalance(userId, balance);
+    setFinancialProfile({
+      ...financialProfile,
+      currentBalance: balance,
+    });
+  }
+
   return (
     <AppShell>
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <DashboardHeader />
-        <SummaryCards cards={buildSummaryCards(financialProfile)} />
+        <SummaryCards
+          cards={buildSummaryCards(financialProfile)}
+          onEditBalance={() => setIsBalanceModalOpen(true)}
+        />
 
         <div className="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
           <MonthlyChart data={buildMonthlyData(transactions)} isReady={chartsReady} />
@@ -170,6 +189,14 @@ export function DashboardView() {
           <BudgetsPanel budgets={budgets} />
         </div>
       </section>
+
+      {isBalanceModalOpen && financialProfile ? (
+        <EditBalanceModal
+          currentBalance={financialProfile.currentBalance}
+          onClose={() => setIsBalanceModalOpen(false)}
+          onSave={handleUpdateBalance}
+        />
+      ) : null}
     </AppShell>
   );
 }

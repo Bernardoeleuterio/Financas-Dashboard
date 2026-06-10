@@ -1,0 +1,148 @@
+.overlay {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgb(15 23 42 / 52%);
+}
+
+.modal {
+  width: min(100%, 430px);
+  border: 1px solid #dfe5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 22px 55px rgb(15 23 42 / 20%);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #e5eaed;
+}
+
+.eyebrow {
+  color: #087f5b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.title {
+  margin-top: 4px;
+  color: #17202a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.closeButton {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d6dde1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #66727b;
+  cursor: pointer;
+}
+
+.form {
+  padding: 22px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34414a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.inputGroup {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #ccd5da;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.inputGroup:focus-within {
+  border-color: #087f5b;
+  box-shadow: 0 0 0 3px rgb(8 127 91 / 12%);
+}
+
+.inputGroup span {
+  padding-left: 13px;
+  color: #66727b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  border: 0;
+  outline: 0;
+  padding: 0 13px 0 8px;
+  color: #17202a;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.help {
+  margin-top: 9px;
+  color: #74808a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.error {
+  margin-top: 12px;
+  color: #b4233c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.cancelButton,
+.saveButton {
+  height: 40px;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 15px;
+}
+
+.cancelButton {
+  border: 1px solid #d6dde1;
+  background: #ffffff;
+  color: #45515a;
+}
+
+.saveButton {
+  border: 1px solid #087f5b;
+  background: #087f5b;
+  color: #ffffff;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}

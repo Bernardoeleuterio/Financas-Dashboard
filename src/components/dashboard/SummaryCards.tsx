@@ -1,10 +1,15 @@
+import { Pencil } from "lucide-react";
 import type { SummaryCard } from "./types";
 
 type SummaryCardsProps = {
   cards: SummaryCard[];
+  onEditBalance?: () => void;
 };
 
-export function SummaryCards({ cards }: SummaryCardsProps) {
+export function SummaryCards({
+  cards,
+  onEditBalance,
+}: SummaryCardsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => {
@@ -19,11 +24,24 @@ export function SummaryCards({ cards }: SummaryCardsProps) {
               <span className="text-sm font-medium text-slate-500">
                 {card.label}
               </span>
-              <span
-                className={`inline-flex size-10 items-center justify-center rounded-md ${card.tone}`}
-              >
-                <Icon className="size-5" />
-              </span>
+              <div className="flex items-center gap-2">
+                {card.editable && onEditBalance ? (
+                  <button
+                    aria-label="Editar saldo atual"
+                    className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition hover:border-emerald-300 hover:text-emerald-700"
+                    onClick={onEditBalance}
+                    title="Editar saldo"
+                    type="button"
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                ) : null}
+                <span
+                  className={`inline-flex size-10 items-center justify-center rounded-md ${card.tone}`}
+                >
+                  <Icon className="size-5" />
+                </span>
+              </div>
             </div>
             <strong className="mt-5 block text-2xl font-semibold tracking-normal text-slate-950">
               {card.value}

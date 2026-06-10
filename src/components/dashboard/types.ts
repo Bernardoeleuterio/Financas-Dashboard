@@ -6,6 +6,7 @@ export type SummaryCard = {
   change: string;
   icon: LucideIcon;
   tone: string;
+  editable?: boolean;
 };
 
 export type MonthlyFinance = {

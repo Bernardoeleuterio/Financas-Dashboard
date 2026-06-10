@@ -127,6 +127,20 @@ export async function saveProfile(userId: string, profile: FinancialProfile) {
   }
 }
 
+export async function updateCurrentBalance(userId: string, balance: number) {
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      current_balance: balance,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function getCategories(userId: string) {
   const { data, error } = await supabase
     .from("categories")

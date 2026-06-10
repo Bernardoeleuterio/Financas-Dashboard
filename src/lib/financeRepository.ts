@@ -248,6 +248,42 @@ export async function createTransaction(
   }
 }
 
+export async function updateTransaction(
+  transactionId: string,
+  categoryId: string,
+  transaction: NewTransactionInput,
+) {
+  const { error } = await supabase
+    .from("transactions")
+    .update({
+      category_id: categoryId,
+      description: transaction.title.trim(),
+      type: transaction.type,
+      amount: transaction.amount,
+      payment_method:
+        paymentMethodToDatabase[transaction.paymentMethod] ?? "pix",
+      debt_id: transaction.debtId,
+      transaction_date: transaction.date,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", transactionId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteTransaction(transactionId: string) {
+  const { error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", transactionId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function getDebts(userId: string) {
   const { data, error } = await supabase
     .from("debts")

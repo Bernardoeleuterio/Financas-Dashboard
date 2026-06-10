@@ -1,11 +1,23 @@
-import { ArrowUpRight, CreditCard, Search } from "lucide-react";
+import {
+  ArrowUpRight,
+  CreditCard,
+  Pencil,
+  Search,
+  Trash2,
+} from "lucide-react";
 import type { Transaction } from "./types";
 
 type TransactionsListProps = {
   transactions: Transaction[];
+  onDelete?: (transaction: Transaction) => void;
+  onEdit?: (transaction: Transaction) => void;
 };
 
-export function TransactionsList({ transactions }: TransactionsListProps) {
+export function TransactionsList({
+  transactions,
+  onDelete,
+  onEdit,
+}: TransactionsListProps) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -32,7 +44,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
           {transactions.map((transaction) => (
           <div
             className="grid gap-3 p-5 sm:grid-cols-[1fr_auto] sm:items-center"
-            key={`${transaction.title}-${transaction.rawDate}-${transaction.amount}`}
+            key={transaction.id}
           >
             <div className="flex items-center gap-3">
               <span
@@ -58,15 +70,43 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                 </p>
               </div>
             </div>
-            <strong
-              className={`text-sm font-semibold ${
-                transaction.type === "income"
-                  ? "text-emerald-700"
-                  : "text-slate-950"
-              }`}
-            >
-              {transaction.amount}
-            </strong>
+            <div className="flex items-center justify-between gap-3 sm:justify-end">
+              <strong
+                className={`text-sm font-semibold ${
+                  transaction.type === "income"
+                    ? "text-emerald-700"
+                    : "text-slate-950"
+                }`}
+              >
+                {transaction.amount}
+              </strong>
+              {onEdit || onDelete ? (
+                <div className="flex items-center gap-1">
+                  {onEdit ? (
+                    <button
+                      aria-label={`Editar ${transaction.title}`}
+                      className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition hover:border-emerald-300 hover:text-emerald-700"
+                      onClick={() => onEdit(transaction)}
+                      title="Editar transacao"
+                      type="button"
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                  ) : null}
+                  {onDelete ? (
+                    <button
+                      aria-label={`Excluir ${transaction.title}`}
+                      className="inline-flex size-9 items-center justify-center rounded-md border border-rose-200 bg-white text-rose-600 transition hover:bg-rose-50"
+                      onClick={() => onDelete(transaction)}
+                      title="Excluir transacao"
+                      type="button"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
           ))}
         </div>

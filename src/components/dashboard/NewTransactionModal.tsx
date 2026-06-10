@@ -2,33 +2,40 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import type { FormEvent } from "react";
 import styles from "@/styles/NewTransactionModal.module.css";
-import type { NewTransactionInput } from "./types";
+import type { NewTransactionInput, Transaction } from "./types";
 
 type NewTransactionModalProps = {
   categories: string[];
   creditCards: { id: string; name: string }[];
+  initialTransaction?: Transaction | null;
   onClose: () => void;
-  onCreate: (transaction: NewTransactionInput) => Promise<void>;
+  onSave: (transaction: NewTransactionInput) => Promise<void>;
   onCreateCategory: (category: string) => Promise<string | null>;
 };
 
 export function NewTransactionModal({
   categories,
   creditCards,
+  initialTransaction,
   onClose,
-  onCreate,
+  onSave,
   onCreateCategory,
 }: NewTransactionModalProps) {
-  const [selectedCategory, setSelectedCategory] = useState(categories[0] ?? "");
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialTransaction?.category ?? categories[0] ?? "",
+  );
   const [newCategory, setNewCategory] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("Pix");
+  const [paymentMethod, setPaymentMethod] = useState(
+    initialTransaction?.paymentMethod ?? "Pix",
+  );
+  const isEditing = Boolean(initialTransaction);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
 
-    await onCreate({
+    await onSave({
       title: String(formData.get("title")),
       category: selectedCategory,
       debtId:
@@ -64,17 +71,20 @@ export function NewTransactionModal({
   return (
     <div className={styles.overlay} role="presentation">
       <section
-        aria-labelledby="new-transaction-title"
+        aria-labelledby="transaction-modal-title"
+        aria-modal="true"
         className={styles.modal}
         role="dialog"
       >
         <div className={styles.header}>
           <div>
-            <h2 className={styles.title} id="new-transaction-title">
-              Nova transacao
+            <h2 className={styles.title} id="transaction-modal-title">
+              {isEditing ? "Editar transacao" : "Nova transacao"}
             </h2>
             <p className={styles.description}>
-              Registre uma receita ou despesa para atualizar o painel.
+              {isEditing
+                ? "Atualize as informacoes deste lancamento."
+                : "Registre uma receita ou despesa para atualizar o painel."}
             </p>
           </div>
           <button
@@ -92,7 +102,11 @@ export function NewTransactionModal({
           <div className={styles.grid}>
             <label className={styles.field}>
               <span className={styles.label}>Tipo</span>
-              <select className={styles.select} defaultValue="expense" name="type">
+              <select
+                className={styles.select}
+                defaultValue={initialTransaction?.type ?? "expense"}
+                name="type"
+              >
                 <option value="expense">Despesa</option>
                 <option value="income">Receita</option>
               </select>
@@ -108,6 +122,7 @@ export function NewTransactionModal({
                 required
                 step="0.01"
                 type="number"
+                defaultValue={initialTransaction?.numericAmount}
               />
             </label>
           </div>
@@ -121,6 +136,7 @@ export function NewTransactionModal({
               placeholder="Ex: Mercado semanal"
               required
               type="text"
+              defaultValue={initialTransaction?.title}
             />
           </label>
 
@@ -158,7 +174,12 @@ export function NewTransactionModal({
           {paymentMethod === "Cartao" ? (
             <label className={styles.field}>
               <span className={styles.label}>Qual cartao foi utilizado?</span>
-              <select className={styles.select} name="debtId" required>
+              <select
+                className={styles.select}
+                defaultValue={initialTransaction?.debtId ?? ""}
+                name="debtId"
+                required
+              >
                 <option value="">Selecione um cartao</option>
                 {creditCards.map((card) => (
                   <option key={card.id} value={card.id}>
@@ -180,7 +201,10 @@ export function NewTransactionModal({
               <span className={styles.label}>Data</span>
               <input
                 className={styles.input}
-                defaultValue={new Date().toISOString().slice(0, 10)}
+                defaultValue={
+                  initialTransaction?.rawDate ??
+                  new Date().toISOString().slice(0, 10)
+                }
                 name="date"
                 required
                 type="date"
@@ -218,7 +242,7 @@ export function NewTransactionModal({
               Cancelar
             </button>
             <button className={styles.primaryButton} type="submit">
-              Salvar transacao
+              {isEditing ? "Salvar alteracoes" : "Salvar transacao"}
             </button>
           </div>
         </form>

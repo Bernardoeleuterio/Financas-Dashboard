@@ -13,9 +13,11 @@ import { AppShell } from "@/components/layout/AppShell";
 import {
   createCategory,
   createTransaction,
+  deleteTransaction,
   getCategories,
   getDebts,
   getTransactions,
+  updateTransaction,
   type FinanceCategory,
 } from "@/lib/financeRepository";
 import { supabase } from "@/lib/supabaseClient";
@@ -24,6 +26,8 @@ import styles from "@/styles/FinancePages.module.css";
 export default function TransactionsPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<FinanceCategory[]>([]);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creditCards, setCreditCards] = useState<
     { id: string; name: string }[]
@@ -58,7 +62,7 @@ export default function TransactionsPage() {
     loadData();
   }, [router]);
 
-  async function handleCreateTransaction(transaction: NewTransactionInput) {
+  async function handleSaveTransaction(transaction: NewTransactionInput) {
     if (!userId) return;
 
     const category = categories.find(
@@ -67,7 +71,26 @@ export default function TransactionsPage() {
 
     if (!category) return;
 
-    await createTransaction(userId, category.id, transaction);
+    if (editingTransaction) {
+      await updateTransaction(editingTransaction.id, category.id, transaction);
+    } else {
+      await createTransaction(userId, category.id, transaction);
+    }
+
+    setTransactions(await getTransactions(userId));
+  }
+
+  async function handleDeleteTransaction(transaction: Transaction) {
+    if (
+      !userId ||
+      !window.confirm(
+        `Deseja excluir a transacao "${transaction.title}"? Esta acao corrigira o saldo automaticamente.`,
+      )
+    ) {
+      return;
+    }
+
+    await deleteTransaction(transaction.id);
     setTransactions(await getTransactions(userId));
   }
 
@@ -105,7 +128,10 @@ export default function TransactionsPage() {
           </div>
           <button
             className={styles.primaryButton}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditingTransaction(null);
+              setIsModalOpen(true);
+            }}
             type="button"
           >
             <Plus size={17} />
@@ -140,16 +166,27 @@ export default function TransactionsPage() {
           </article>
         </div>
 
-        <TransactionsList transactions={transactions} />
+        <TransactionsList
+          transactions={transactions}
+          onDelete={handleDeleteTransaction}
+          onEdit={(transaction) => {
+            setEditingTransaction(transaction);
+            setIsModalOpen(true);
+          }}
+        />
       </div>
 
       {isModalOpen ? (
         <NewTransactionModal
           categories={categories.map((category) => category.name)}
           creditCards={creditCards}
-          onClose={() => setIsModalOpen(false)}
-          onCreate={handleCreateTransaction}
+          initialTransaction={editingTransaction}
+          onClose={() => {
+            setEditingTransaction(null);
+            setIsModalOpen(false);
+          }}
           onCreateCategory={handleCreateCategory}
+          onSave={handleSaveTransaction}
         />
       ) : null}
     </AppShell>

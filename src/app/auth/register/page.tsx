@@ -20,6 +20,10 @@ export default function RegisterPage() {
     setMessage("");
 
     if (!hasSupabaseConfig) {
+      console.log("Erro de Configuração do Supabase (Registro):", {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Definida" : "Ausente"
+      });
       setError(
         "Configure as chaves do Supabase no .env.local antes de criar conta.",
       );
